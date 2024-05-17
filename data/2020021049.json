@@ -1,0 +1,26 @@
+[
+    {
+        "rollNo": "2020021049",
+        "name": "Bhuwan Awasthi",
+        "image_url": "https://storage.googleapis.com/attendance_management_system/2020021049_20240331134409.jpg",
+        "emotion": "neutral",
+        "accuracy": "84.95%",
+        "date": "2024-03-31"
+    },
+    {
+        "rollNo": "2020021049",
+        "name": "Bhuwan Awasthi",
+        "image_url": "https://storage.googleapis.com/attendance_management_system/2020021049_20240331134540.jpg",
+        "emotion": "disgust",
+        "accuracy": "81.78%",
+        "date": "2024-03-31"
+    },
+    {
+        "rollNo": "2020021049",
+        "name": "Bhuwan Awasthi",
+        "image_url": "https://storage.googleapis.com/attendance_management_system/2020021049_20240331134607.jpg",
+        "emotion": "happy",
+        "accuracy": "88.80%",
+        "date": "2024-03-31"
+    }
+]
