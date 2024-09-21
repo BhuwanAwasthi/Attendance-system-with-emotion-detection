@@ -4,3 +4,4 @@ requests==2.25.1
 google-cloud-storage==1.42.0
 werkzeug==2.0.1
 cloudinary
+gunicorn==20.1.0
