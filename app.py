@@ -1,15 +1,26 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file
-from werkzeug.utils import secure_filename
-from google.cloud import storage
+import cloudinary
+import cloudinary.uploader
 from google.oauth2 import service_account
 import requests, json, os
 from datetime import datetime
 
+import os
+import cloudinary
+
+# Flask App and Cloudinary Setup
 app = Flask(__name__)
-credentials = service_account.Credentials.from_service_account_info(credentials_info)
-storage_client = storage.Client(credentials=credentials, project=credentials_info['project_id'])
-bucket_name = 'attendance_management_system'
-bucket = storage_client.bucket(bucket_name)
+
+# Configure Cloudinary using environment variables
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET')
+)
+
+# You can do the same for other API keys like RapidAPI:
+rapidapi_key = os.getenv('RAPIDAPI_KEY')
+
 
 DATA_DIR = 'data'
 if not os.path.exists(DATA_DIR):
@@ -18,18 +29,21 @@ if not os.path.exists(DATA_DIR):
 @app.route('/')
 def index():
     return send_from_directory('static', 'index.html')
+
 @app.route('/submit', methods=['POST'])
 def submit():
     if 'photo' not in request.files or 'rollNo' not in request.form:
         return jsonify({'error': 'Missing photo or roll number'}), 400
-    
+
     photo = request.files['photo']
     name = request.form['name']
     roll_no = request.form['rollNo']
-    image_url = upload_image_to_gcs(photo, roll_no)
+    
+    # Upload the image to Cloudinary
+    image_url = upload_image_to_cloudinary(photo, roll_no)
     if image_url is None:
         return jsonify({'error': 'Failed to upload image'}), 500
-    
+
     emotion_data = detect_emotion(image_url)
     if emotion_data != 'Error':
         save_attendance_record(roll_no, name, image_url, emotion_data['emotion'], emotion_data['accuracy'])
@@ -37,16 +51,13 @@ def submit():
     else:
         return jsonify({'error': 'Emotion detection failed'}), 500
 
-def upload_image_to_gcs(file_stream, roll_no):
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"{secure_filename(roll_no)}_{timestamp}.jpg"
-    blob = bucket.blob(filename)
+def upload_image_to_cloudinary(photo, roll_no):
     try:
-        blob.upload_from_string(file_stream.read(), content_type=file_stream.content_type)
-        blob.make_public()
-        return blob.public_url
+        # Using Cloudinary uploader to upload image
+        result = cloudinary.uploader.upload(photo, public_id=f"{roll_no}_{datetime.now().strftime('%Y%m%d%H%M%S')}")
+        return result.get("url")  # Return the URL of the uploaded image
     except Exception as e:
-        print(f"Error uploading to GCS: {e}")
+        print(f"Error uploading to Cloudinary: {e}")
         return None
 
 def save_attendance_record(roll_no, name, image_url, emotion, accuracy):
@@ -69,7 +80,7 @@ def detect_emotion(image_url):
         payload = {"url": image_url}
         headers = {
             "content-type": "application/json",
-            "X-RapidAPI-Key": "key",
+            "X-RapidAPI-Key": "rapidapi_key",
             "X-RapidAPI-Host": "emotion-detection2.p.rapidapi.com"
         }
         response = requests.post(url, json=payload, headers=headers)
