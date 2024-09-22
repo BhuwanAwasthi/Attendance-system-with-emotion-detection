@@ -19,7 +19,7 @@ cloudinary.config(
 )
 
 # You can do the same for other API keys like RapidAPI:
-
+rapidapi_key=os.getenv('RAPIDAPI_KEY')
 
 DATA_DIR = 'data'
 if not os.path.exists(DATA_DIR):
@@ -79,7 +79,7 @@ def detect_emotion(image_url):
         payload = {"url": image_url}
         headers = {
             "content-type": "application/json",
-            "X-RapidAPI-Key": "3366f573b8mshe39011ca815f1c6p1eb806jsn8911821f1af2",
+            "X-RapidAPI-Key": "rapidapi_key",
             "X-RapidAPI-Host": "emotion-detection2.p.rapidapi.com"
         }
         response = requests.post(url, json=payload, headers=headers)
